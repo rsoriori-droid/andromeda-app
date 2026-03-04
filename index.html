@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fritura Andromeda - Punto de Venta</title>
     <style>
-        /* CSS para el estilo oscuro y bordes blancos del boceto */
         body {
             background-color: black;
             color: white;
@@ -14,29 +13,26 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            min-height: 100vh;
             box-sizing: border-box;
         }
 
-        /* Contenedor principal en malla (grid) */
         .grid-container {
             display: grid;
-            grid-template-columns: 2fr 1fr; /* Columna izquierda más ancha */
-            grid-template-rows: auto 1fr auto; /* Filas: Admin/Título, Ventas/Productos, Total/Exportar */
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto 1fr auto;
             gap: 10px;
             flex-grow: 1;
         }
 
-        /* Estilo general para los paneles con borde blanco */
         .panel {
             border: 2px solid white;
             padding: 15px;
             box-sizing: border-box;
         }
 
-        /* Panel de Administración (Inputs Superiores) */
         .admin-panel {
-            grid-column: 1 / -1; /* Ocupa todo el ancho superior */
+            grid-column: 1 / -1;
             display: flex;
             gap: 10px;
             align-items: center;
@@ -60,11 +56,10 @@
             font-weight: bold;
         }
 
-        /* Panel de Ventas (Izquierda, innerHTML) */
         .ventas-panel {
             grid-row: 2;
             grid-column: 1;
-            overflow-y: auto; /* Scroll si hay muchas ventas */
+            overflow-y: auto;
         }
 
         .ventas-panel h2 {
@@ -77,7 +72,6 @@
             font-size: 0.9em;
         }
 
-        /* Panel de Selección de Productos (Derecha) */
         .productos-panel {
             grid-row: 2;
             grid-column: 2;
@@ -92,7 +86,6 @@
             text-align: center;
         }
 
-        /* Contenedor dinámico para los botones generados */
         #contenedor-botones {
             display: flex;
             flex-direction: column;
@@ -100,7 +93,6 @@
             overflow-y: auto;
         }
 
-        /* Estilo para los botones de producto (negro con borde blanco) */
         .btn-producto {
             background-color: black;
             color: white;
@@ -115,7 +107,6 @@
             background-color: #222;
         }
 
-        /* Panel Inferior (Total y Exportar) */
         .total-panel {
             grid-row: 3;
             grid-column: 1;
@@ -141,32 +132,27 @@
             padding: 10px 20px;
             cursor: pointer;
         }
-
     </style>
 </head>
 <body>
 
     <div class="grid-container">
-
         <div class="panel admin-panel">
             <input type="text" id="nombreId" placeholder="Nombre del producto" list="sugerencias">
             <datalist id="sugerencias"></datalist>
-            
             <input type="number" id="precioId" placeholder="Añada un precio">
-            
             <button onclick="crearBoton()">Enviar</button>
+            <button onclick="limpiarTodo()" style="background-color: #440000; color: white; border: 1px solid white;">Borrar Todo</button>
         </div>
 
         <div class="panel ventas-panel">
             <h2>ventas</h2>
-            <div id="cuadro-ventas">
-                </div>
+            <div id="cuadro-ventas"></div>
         </div>
 
         <div class="panel productos-panel">
             <h3>seleccionar producto:</h3>
-            <div id="contenedor-botones">
-                </div>
+            <div id="contenedor-botones"></div>
         </div>
 
         <div class="panel total-panel">
@@ -175,87 +161,154 @@
         </div>
 
         <div class="panel export-panel">
-            <button onclick="exportarCSV()">*boton de exportar csv*</button>
+            <button onclick="exportarCSV()">GENERAR REPORTE SQL</button>
         </div>
-
     </div>
 
     <script>
-        // --- LÓGICA JAVASCRIPT ---
-
-        // Variables globales
+        // --- LÓGICA DEL SISTEMA ---
         let totalVendido = 0;
-        let listaProductos = []; // Para el filtro inteligente y persistencia básica
+        let listaProductos = [];
+        let historialVentas = [];
 
-        // Función para CREAR UN NUEVO BOTÓN de producto
+        // AL CARGAR: Recuperar datos
+        window.onload = function() {
+            const datosGuardados = localStorage.getItem('andromeda_datos');
+            if (datosGuardados) {
+                const appData = JSON.parse(datosGuardados);
+                listaProductos = appData.listaProductos || [];
+                historialVentas = appData.historialVentas || [];
+                totalVendido = appData.totalVendido || 0;
+
+                listaProductos.forEach(p => {
+                    agregarBotonVisual(p.nombre, p.precio);
+                    actualizarDatalist(p.nombre);
+                });
+                
+                const cuadroVentas = document.getElementById('cuadro-ventas');
+                historialVentas.forEach(venta => {
+                    cuadroVentas.innerHTML += venta;
+                });
+
+                document.getElementById('total-display').innerText = `$${totalVendido.toFixed(2)}`;
+            }
+        };
+
+        function guardarEnLocalStorage() {
+            const appData = {
+                listaProductos: listaProductos,
+                historialVentas: historialVentas,
+                totalVendido: totalVendido
+            };
+            localStorage.setItem('andromeda_datos', JSON.stringify(appData));
+        }
+
         function crearBoton() {
-            // 1. Obtener valores de los inputs
             const nombre = document.getElementById('nombreId').value.trim();
             const precio = parseFloat(document.getElementById('precioId').value);
 
-            // Validación básica
             if (!nombre || isNaN(precio) || precio <= 0) {
                 alert("Por favor, ingrese un nombre y un precio válido.");
                 return;
             }
 
-            // 2. Guardar producto para el filtro inteligente (datalist)
             if (!listaProductos.some(p => p.nombre.toLowerCase() === nombre.toLowerCase())) {
                 listaProductos.push({ nombre, precio });
                 actualizarDatalist(nombre);
+                agregarBotonVisual(nombre, precio);
+                guardarEnLocalStorage();
             }
 
-            // 3. Generar el botón en el contenedor con innerHTML
+            document.getElementById('nombreId').value = '';
+            document.getElementById('precioId').value = '';
+            document.getElementById('nombreId').focus();
+        }
+
+        function agregarBotonVisual(nombre, precio) {
             const contenedorBotones = document.getElementById('contenedor-botones');
-            
-            // Creamos el HTML del botón con la función de venta vinculada
             const nuevoBotonHTML = `
                 <button class="btn-producto" onclick="registrarVenta('${nombre}', ${precio})">
                     ${nombre} ($${precio.toFixed(2)})
                 </button>
             `;
-            
             contenedorBotones.innerHTML += nuevoBotonHTML;
-
-            // 4. Limpiar los inputs para la próxima entrada
-            document.getElementById('nombreId').value = '';
-            document.getElementById('precioId').value = '';
-            document.getElementById('nombreId').focus(); // Pone el foco de vuelta en el nombre
         }
 
-        // Función para REGISTRAR UNA VENTA al hacer clic en un botón
         function registrarVenta(nombreProducto, precioProducto) {
-            // 1. Obtener fecha y hora actual
             const ahora = new Date();
-            const fechaFormateada = ahora.toISOString().split('T')[0]; // AAAA-MM-DD
-            const horaFormateada = ahora.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+            const fechaFormateada = ahora.toISOString().split('T')[0];
+            const horaFormateada = ahora.toTimeString().split(' ')[0].substring(0, 5);
 
-            // 2. Localizar el cuadro de ventas e insertar la línea con innerHTML
             const cuadroVentas = document.getElementById('cuadro-ventas');
             const lineaVenta = `<p>${fechaFormateada} ${horaFormateada} ${nombreProducto} $${precioProducto.toFixed(2)}*</p>`;
             
             cuadroVentas.innerHTML += lineaVenta;
+            historialVentas.push(lineaVenta);
 
-            // 3. Actualizar el Total Vendido
             totalVendido += precioProducto;
             document.getElementById('total-display').innerText = `$${totalVendido.toFixed(2)}`;
+            
+            guardarEnLocalStorage();
 
-            // Scroll automático hacia abajo en el panel de ventas
             const ventasPanel = document.querySelector('.ventas-panel');
             ventasPanel.scrollTop = ventasPanel.scrollHeight;
         }
 
-        // Función para actualizar el datalist del "filtro inteligente"
         function actualizarDatalist(nuevoNombre) {
             const datalist = document.getElementById('sugerencias');
             datalist.innerHTML += `<option value="${nuevoNombre}">`;
         }
 
-        // Función prototipo para Exportar CSV (solo muestra alerta)
-        function exportarCSV() {
-            alert("Función de exportar CSV (SaaS) - Se implementará en el Backend real.| pagina web frontend desarollada por senyasser|");
+        function limpiarTodo() {
+            if(confirm("¿Estás seguro de que quieres borrar todos los datos?")) {
+                localStorage.removeItem('andromeda_datos');
+                location.reload();
+            }
         }
 
+        // --- TU NUEVA FUNCIÓN DE REPORTE SQL ---
+        function exportarCSV() {
+            const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+            const hoy = new Date();
+            const nombreDia = diasSemana[hoy.getDay()];
+
+            let reporteDiv = document.getElementById('reporte-sql');
+            if (!reporteDiv) {
+                reporteDiv = document.createElement('div');
+                reporteDiv.id = 'reporte-sql';
+                reporteDiv.className = 'panel';
+                reporteDiv.style.marginTop = '20px';
+                reporteDiv.style.borderColor = 'yellow';
+                document.body.appendChild(reporteDiv);
+            }
+
+            reporteDiv.innerHTML = `
+                <h3 style="color: yellow; margin-top: 0;">>_ EJECUTANDO QUERY: SELECT SUM(precio) FROM ventas...</h3>
+                <table style="width: 100%; border-collapse: collapse; font-family: monospace;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid white; text-align: left;">
+                            <th>CONCEPTO</th>
+                            <th>VALOR (AS total_hoy)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total Ventas ${nombreDia}</td>
+                            <td style="color: #00ff00;">$${totalVendido.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td>Registros Procesados</td>
+                            <td>${historialVentas.length} ítems</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="font-size: 0.8em; color: gray; margin-top: 10px;">
+                    Estado: Datos listos para migración a PostgreSQL | Desarrollado por senyasser
+                </p>
+            `;
+
+            reporteDiv.scrollIntoView({ behavior: 'smooth' });
+        }
     </script>
 </body>
 </html>
