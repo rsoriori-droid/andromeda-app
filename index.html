@@ -162,7 +162,7 @@
         </div>
 
         <div class="panel export-panel">
-            <button onclick="exportarSQL()">CONSULTAR AUDITORÍA</button>
+            <button onclick="exportarSQL()">Enviar</button>
         </div>
     </div>
 
@@ -292,7 +292,7 @@
             reporteDiv.innerHTML = `
                 <h3 style="color: yellow; margin-top: 0;">>_ AUDITORÍA POSTGRESQL CLOUD</h3>
                 <p>Total de ventas registradas: <strong>${historialVentas.length}</strong></p>
-                <p>Suma total (SUM): <strong style="color: #00ff00;">$${totalVendido.toFixed(2)}</strong></p>
+                <p>Suma total : <strong style="color: #00ff00;">$${totalVendido.toFixed(2)}</strong></p>
                 <p style="font-size: 0.8em; color: gray;">Sincronizado con proyecto: ekllusthrzmilknwivec</p>
             `;
             reporteDiv.scrollIntoView({ behavior: 'smooth' });
