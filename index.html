@@ -81,12 +81,6 @@
             gap: 10px;
         }
 
-        .productos-panel h3 {
-            margin-top: 0;
-            font-size: 1em;
-            text-align: center;
-        }
-
         #contenedor-botones {
             display: flex;
             flex-direction: column;
@@ -139,20 +133,20 @@
 
     <div class="grid-container">
         <div class="panel admin-panel">
-            <input type="text" id="nombreId" placeholder="Nombre del producto" list="sugerencias">
+            <input type="text" id="nombreId" placeholder="Nuevo producto" list="sugerencias">
             <datalist id="sugerencias"></datalist>
             <input type="number" id="precioId" placeholder="Precio">
-            <button onclick="crearBoton()">Añadir Producto</button>
-            <button onclick="limpiarTodo()" style="background-color: #440000; color: white; border: 1px solid white;">Resetear Todo</button>
+            <button onclick="crearBoton()">Añadir al Menú</button>
+            <button onclick="limpiarVentas()" style="background-color: #b30000; color: white; border: 1px solid white;">Cerrar Caja (Borrar Ventas)</button>
         </div>
 
         <div class="panel ventas-panel">
-            <h2>Registro de Ventas (Nube)</h2>
+            <h2>Registro de Ventas Hoy</h2>
             <div id="cuadro-ventas"></div>
         </div>
 
         <div class="panel productos-panel">
-            <h3>Seleccionar Producto:</h3>
+            <h3 style="text-align:center">Productos:</h3>
             <div id="contenedor-botones"></div>
         </div>
 
@@ -162,7 +156,7 @@
         </div>
 
         <div class="panel export-panel">
-            <button onclick="exportarSQL()">Enviar</button>
+            <button onclick="exportarSQL()">Generar Reporte</button>
         </div>
     </div>
 
@@ -175,7 +169,7 @@
         let totalVendido = 0;
         let historialVentas = [];
 
-        // CARGA INICIAL
+        // CARGA INICIAL (No borra nada, solo lee lo que hay en la nube)
         window.onload = async function() {
             await cargarProductos();
             await cargarVentasHoy();
@@ -195,14 +189,12 @@
                 datalist.innerHTML = "";
 
                 data.forEach(p => {
-                    // Crear Botón
                     const btn = document.createElement('button');
                     btn.className = 'btn-producto';
                     btn.innerHTML = `${p.nombre} ($${parseFloat(p.precio).toFixed(2)})`;
                     btn.onclick = () => registrarVenta(p.nombre, p.precio);
                     contenedor.appendChild(btn);
 
-                    // Crear Sugerencia
                     const opt = document.createElement('option');
                     opt.value = p.nombre;
                     datalist.appendChild(opt);
@@ -221,43 +213,16 @@
                 const cuadroVentas = document.getElementById('cuadro-ventas');
                 cuadroVentas.innerHTML = "";
                 totalVendido = 0;
-                historialVentas = [];
-                
+                historialVentas = data;
+
                 data.forEach(v => {
-                    const fecha = new Date(v.fecha_hora).toLocaleDateString();
                     const hora = new Date(v.fecha_hora).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    const linea = `<p style="margin: 5px 0; border-bottom: 1px dotted #333;">[${fecha} ${hora}] ${v.producto} - $${parseFloat(v.precio).toFixed(2)}</p>`;
-                    
+                    const linea = `<p style="margin: 5px 0; border-bottom: 1px dotted #333;">[${hora}] ${v.producto} - $${parseFloat(v.precio).toFixed(2)}</p>`;
                     cuadroVentas.innerHTML += linea;
-                    historialVentas.push(v);
                     totalVendido += parseFloat(v.precio);
                 });
                 document.getElementById('total-display').innerText = `$${totalVendido.toFixed(2)}`;
                 cuadroVentas.scrollTop = cuadroVentas.scrollHeight;
-            }
-        }
-
-        // ACCIONES
-        async function crearBoton() {
-            const nombre = document.getElementById('nombreId').value.trim();
-            const precio = parseFloat(document.getElementById('precioId').value);
-
-            if (!nombre || isNaN(precio) || precio <= 0) {
-                alert("Ingresa datos válidos.");
-                return;
-            }
-
-            const { error } = await _supabase
-                .from('productos')
-                .insert([{ nombre, precio }]);
-            
-            if (error) {
-                if(error.code === '23505') alert("Este producto ya existe.");
-                else console.error(error);
-            } else {
-                document.getElementById('nombreId').value = "";
-                document.getElementById('precioId').value = "";
-                await cargarProductos();
             }
         }
 
@@ -266,34 +231,47 @@
                 .from('ventas')
                 .insert([{ producto: nombre, precio: precio }]);
 
-            if (error) alert("Error de conexión con la nube.");
-            else await cargarVentasHoy();
+            if (error) alert("Error al guardar venta.");
+            else await cargarVentasHoy(); // Recarga la lista desde la nube
         }
 
-        async function limpiarTodo() {
-            if(confirm("¿Borrar permanentemente todos los registros de la nube?")) {
-                await _supabase.from('ventas').delete().neq('id', 0);
-                await _supabase.from('productos').delete().neq('id', 0);
-                location.reload();
+        // FUNCIÓN MODIFICADA: Solo borra ventas, mantiene productos
+        async function limpiarVentas() {
+            if(confirm("¿Estás seguro de borrar solo el historial de ventas? Tus productos no se borrarán.")) {
+                const { error } = await _supabase.from('ventas').delete().neq('id', 0);
+                if (error) alert("Error al limpiar.");
+                else location.reload();
+            }
+        }
+
+        async function crearBoton() {
+            const nombre = document.getElementById('nombreId').value.trim();
+            const precio = parseFloat(document.getElementById('precioId').value);
+
+            if (!nombre || isNaN(precio)) return;
+
+            const { error } = await _supabase.from('productos').insert([{ nombre, precio }]);
+            if (error) alert("Error al añadir producto.");
+            else {
+                document.getElementById('nombreId').value = "";
+                document.getElementById('precioId').value = "";
+                await cargarProductos();
             }
         }
 
         function exportarSQL() {
-            let reporteDiv = document.getElementById('reporte-sql');
-            if (!reporteDiv) {
-                reporteDiv = document.createElement('div');
-                reporteDiv.id = 'reporte-sql';
-                reporteDiv.className = 'panel';
-                reporteDiv.style.marginTop = '20px';
-                reporteDiv.style.borderColor = 'yellow';
-                document.body.appendChild(reporteDiv);
-            }
+            let reporteDiv = document.getElementById('reporte-sql') || document.createElement('div');
+            reporteDiv.id = 'reporte-sql';
+            reporteDiv.className = 'panel';
+            reporteDiv.style.marginTop = '20px';
+            reporteDiv.style.borderColor = 'yellow';
+            document.body.appendChild(reporteDiv);
 
             reporteDiv.innerHTML = `
-                <h3 style="color: yellow; margin-top: 0;">>_</h3>
-                <p>Total de ventas registradas: <strong>${historialVentas.length}</strong></p>
-                <p>Suma total : <strong style="color: #00ff00;">$${totalVendido.toFixed(2)}</strong></p>
-                <p style="font-size: 0.8em; color: gray;">proyecto FULLSTACK desarrollado por el Data enginner: Senya</p>
+                <h3 style="color: yellow; margin-top: 0;">>_ Reporte Final</h3>
+                <p>Ventas hoy: <strong>${historialVentas.length}</strong></p>
+                <p>Total: <strong style="color: #00ff00;">$${totalVendido.toFixed(2)}</strong></p>
+                <p style="font-size: 0.8em; color: gray;">Andromeda OS - Data Engineer: Senya</p>
             `;
             reporteDiv.scrollIntoView({ behavior: 'smooth' });
         }
