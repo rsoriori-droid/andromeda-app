@@ -1,0 +1,225 @@
+/* --- RESET --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+body {
+    background-color: #ff6600;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+}
+
+/* --- VENTANA PRINCIPAL --- */
+.dashboard-window {
+    width: 1050px;
+    height: 650px;
+    background-color: #1a1a2e;
+    border-radius: 20px;
+    display: flex;
+    border: 3px solid #000;
+    box-shadow: 0 0 60px rgba(0,0,0,0.6);
+    overflow: hidden;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: 240px;
+    background: #0d0d1a;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar h3 { color: #fff; margin-bottom: 20px; text-transform: lowercase; opacity: 0.7; }
+
+.btn-menu {
+    height: 48px;
+    background: #2a2a40;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    font-weight: 500;
+}
+
+.btn-menu:hover {
+    background: #3d3d5c;
+    color: #fff;
+    border-color: #ff3ca6;
+    box-shadow: inset 0 0 15px rgba(255, 60, 166, 0.2);
+    transform: translateX(8px);
+}
+
+/* --- MAIN CONTENT & HEADER --- */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+.top-nav { display: flex; gap: 15px; align-items: center; position: relative; }
+
+.search-bar {
+    flex: 1;
+    background: #252545;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.search-bar input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 12px;
+    width: 100%;
+    outline: none;
+}
+
+/* --- INTERACTIVIDAD HOVER (ADD_F) --- */
+.add-container {
+    position: relative;
+}
+
+.btn-plus-neon {
+    width: 55px;
+    height: 55px;
+    background: linear-gradient(135deg, #ff6a3d, #ff3ca6);
+    border: none;
+    border-radius: 15px;
+    color: white;
+    font-size: 1.8rem;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(255, 60, 166, 0.5);
+    position: relative;
+    z-index: 101;
+}
+
+.btn-plus-neon:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+.add-f-window {
+    position: absolute;
+    right: 0;
+    top: 65px; /* Aparece justo debajo del botón */
+    width: 280px;
+    background: rgba(17, 17, 38, 0.85);
+    backdrop-filter: blur(10px); /* Efecto cristal */
+    border: 1px solid #ff3ca6;
+    border-radius: 15px;
+    padding: 25px;
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+/* La magia del hover: si tocas el botón o la propia ventana, se muestra */
+.add-container:hover .add-f-window {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.add-f-window input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background: #1a1a35;
+    border: 1px solid #333;
+    color: #fff;
+    border-radius: 8px;
+    outline: none;
+}
+
+/* --- PANELES DE DATOS (GLOW) --- */
+.workspace { display: flex; gap: 20px; flex: 1; overflow: hidden; }
+
+.panel-datos {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.scroll-area {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 5px;
+}
+
+/* Brillo veloz (Loading/Genshin effect) */
+.item-registro {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.03);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.item-registro:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.item-registro::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+
+.item-registro:hover::after {
+    left: 100%;
+    transition: all 0.4s ease;
+}
+
+footer { display: flex; justify-content: space-between; align-items: center; color: #fff; font-family: monospace; }
+
+/* --- OCULTAR RUEDITA (SCROLLBAR) --- */
+
+/* 1. Para Chrome, Safari y Opera */
+.scroll-area::-webkit-scrollbar {
+    display: none;
+}
+
+/* 2. Para Firefox */
+.scroll-area {
+    scrollbar-width: none; /* Oculta la barra */
+    -ms-overflow-style: none;  /* Para Internet Explorer/Edge antiguo */
+}
+
+/* Opcional: Si quieres que el fondo naranja no tenga scroll tampoco */
+body {
+    overflow: hidden;
+}
+
+/* Aseguramos que los paneles internos sigan permitiendo scroll interno */
+.scroll-area {
+    overflow-y: scroll; 
+}

@@ -3,278 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Andromeda - Punto de Venta</title>
+    <title>Fritura Andromeda - Dashboard Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body {
-            background-color: black;
-            color: white;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            grid-template-rows: auto 1fr auto;
-            gap: 10px;
-            flex-grow: 1;
-        }
-
-        .panel {
-            border: 2px solid white;
-            padding: 15px;
-            box-sizing: border-box;
-        }
-
-        .admin-panel {
-            grid-column: 1 / -1;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            background-color: #111;
-        }
-
-        .admin-panel input {
-            background-color: #222;
-            border: 1px solid white;
-            color: white;
-            padding: 8px;
-            flex-grow: 1;
-        }
-
-        .admin-panel button {
-            background-color: white;
-            color: black;
-            border: none;
-            padding: 8px 15px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .ventas-panel {
-            grid-row: 2;
-            grid-column: 1;
-            overflow-y: auto;
-        }
-
-        .ventas-panel h2 {
-            text-align: center;
-            margin-top: 0;
-        }
-
-        #cuadro-ventas {
-            font-family: monospace;
-            font-size: 0.9em;
-        }
-
-        .productos-panel {
-            grid-row: 2;
-            grid-column: 2;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        #contenedor-botones {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            overflow-y: auto;
-        }
-
-        .btn-producto {
-            background-color: black;
-            color: white;
-            border: 1px solid white;
-            padding: 10px;
-            text-align: left;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .btn-producto:hover {
-            background-color: #222;
-        }
-
-        .total-panel {
-            grid-row: 3;
-            grid-column: 1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-
-        .export-panel {
-            grid-row: 3;
-            grid-column: 2;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .export-panel button {
-            background-color: black;
-            color: white;
-            border: 1px solid white;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <div class="grid-container">
-        <div class="panel admin-panel">
-            <input type="text" id="nombreId" placeholder="Nuevo producto" list="sugerencias">
-            <datalist id="sugerencias"></datalist>
-            <input type="number" id="precioId" placeholder="Precio">
-            <button onclick="crearBoton()">Añadir al Menú</button>
-            <button onclick="limpiarVentas()" style="background-color: #b30000; color: white; border: 1px solid white;">Cerrar Caja (Borrar Ventas)</button>
-        </div>
+    <div class="dashboard-window">
+        <aside class="sidebar">
+            <h3>opciones</h3>
+            <button class="btn-menu">Abrir Ventana</button>
+            <button class="btn-menu">Abrir Terminal</button>
+            <button class="btn-menu" onclick="limpiarVentas()" style="color: #ff4d4d;">Cerrar Caja</button>
+            
+            <div style="margin-top:auto; display:flex; gap:12px; align-items:center; color:#fff; font-size: 0.9em;">
+                <div style="width:40px; height:40px; background:#444; border-radius:50%; border:1px solid #ff3ca6;"></div>
+                <span>user_97</span>
+            </div>
+        </aside>
 
-        <div class="panel ventas-panel">
-            <h2>Registro de Ventas Hoy</h2>
-            <div id="cuadro-ventas"></div>
-        </div>
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="btn-menu" style="width:45px; justify-content:center;">≡</div>
+                <div class="search-bar">
+                    <input type="text" placeholder="" list="sugerencias">
+                    <datalist id="sugerencias"></datalist>
+                    <span style="color:#666">🔍</span>
+                </div>
+                
+                <div class="add-container">
+                    <button class="btn-plus-neon">+</button>
+                    
+                    <div id="add_f" class="add-f-window">
+                        <h3>Añadir Producto</h3>
+                        <input type="text" id="nombreId" placeholder="Nombre del producto">
+                        <input type="number" id="precioId" placeholder="Precio ($)">
+                        <button class="btn-plus-neon" style="width:100%; border-radius:10px; font-size:1rem;" onclick="crearBoton()">Guardar</button>
+                    </div>
+                </div>
+            </header>
 
-        <div class="panel productos-panel">
-            <h3 style="text-align:center">Productos:</h3>
-            <div id="contenedor-botones"></div>
-        </div>
+            <section class="workspace">
+                <div class="panel-datos" style="flex:2;">
+                    <h4 style="margin-bottom:15px; opacity:0.5;">Ventas Hoy</h4>
+                    <div id="cuadro-ventas" class="scroll-area"></div>
+                </div>
+                <div class="panel-datos" style="flex:1;">
+                    <h4 style="margin-bottom:15px; opacity:0.5;">Menú</h4>
+                    <div id="contenedor-botones" class="scroll-area"></div>
+                </div>
+            </section>
 
-        <div class="panel total-panel">
-            <span>Total Acumulado:</span>
-            <span id="total-display">$0.00</span>
-        </div>
-
-        <div class="panel export-panel">
-            <button onclick="exportarSQL()">Generar Reporte</button>
-        </div>
+            <footer>
+                <div style="font-size: 1.8rem;">TOTAL : <span id="total-display" style="color:#ff3ca6">$0.00</span></div>
+                <button class="btn-plus-neon" style="width:auto; padding:0 25px; font-size:1rem; border-radius:30px;" onclick="exportarSQL()">exportar.json</button>
+            </footer>
+        </main>
     </div>
 
-    <script>
-        // CONFIGURACIÓN DE CONEXIÓN
-        const supabaseUrl = 'https://ekllusthrzmilknwivec.supabase.co';
-
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-        let totalVendido = 0;
-        let historialVentas = [];
-
-        // CARGA INICIAL (No borra nada, solo lee lo que hay en la nube)
-        window.onload = async function() {
-            await cargarProductos();
-            await cargarVentasHoy();
-        };
-
-        async function cargarProductos() {
-            const { data, error } = await _supabase
-                .from('productos')
-                .select('*')
-                .order('nombre', { ascending: true });
-
-            if (error) console.error("Error cargando productos:", error);
-            else {
-                const contenedor = document.getElementById('contenedor-botones');
-                const datalist = document.getElementById('sugerencias');
-                contenedor.innerHTML = ""; 
-                datalist.innerHTML = "";
-
-                data.forEach(p => {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn-producto';
-                    btn.innerHTML = `${p.nombre} ($${parseFloat(p.precio).toFixed(2)})`;
-                    btn.onclick = () => registrarVenta(p.nombre, p.precio);
-                    contenedor.appendChild(btn);
-
-                    const opt = document.createElement('option');
-                    opt.value = p.nombre;
-                    datalist.appendChild(opt);
-                });
-            }
-        }
-
-        async function cargarVentasHoy() {
-            const { data, error } = await _supabase
-                .from('ventas')
-                .select('*')
-                .order('fecha_hora', { ascending: true });
-
-            if (error) console.error("Error cargando ventas:", error);
-            else {
-                const cuadroVentas = document.getElementById('cuadro-ventas');
-                cuadroVentas.innerHTML = "";
-                totalVendido = 0;
-                historialVentas = data;
-
-                data.forEach(v => {
-                    const hora = new Date(v.fecha_hora).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    const linea = `<p style="margin: 5px 0; border-bottom: 1px dotted #333;">[${hora}] ${v.producto} - $${parseFloat(v.precio).toFixed(2)}</p>`;
-                    cuadroVentas.innerHTML += linea;
-                    totalVendido += parseFloat(v.precio);
-                });
-                document.getElementById('total-display').innerText = `$${totalVendido.toFixed(2)}`;
-                cuadroVentas.scrollTop = cuadroVentas.scrollHeight;
-            }
-        }
-
-        async function registrarVenta(nombre, precio) {
-            const { error } = await _supabase
-                .from('ventas')
-                .insert([{ producto: nombre, precio: precio }]);
-
-            if (error) alert("Error al guardar venta.");
-            else await cargarVentasHoy(); // Recarga la lista desde la nube
-        }
-
-        // FUNCIÓN MODIFICADA: Solo borra ventas, mantiene productos
-        async function limpiarVentas() {
-            if(confirm("¿Estás seguro de borrar solo el historial de ventas? Tus productos no se borrarán.")) {
-                const { error } = await _supabase.from('ventas').delete().neq('id', 0);
-                if (error) alert("Error al limpiar.");
-                else location.reload();
-            }
-        }
-
-        async function crearBoton() {
-            const nombre = document.getElementById('nombreId').value.trim();
-            const precio = parseFloat(document.getElementById('precioId').value);
-
-            if (!nombre || isNaN(precio)) return;
-
-            const { error } = await _supabase.from('productos').insert([{ nombre, precio }]);
-            if (error) alert("Error al añadir producto.");
-            else {
-                document.getElementById('nombreId').value = "";
-                document.getElementById('precioId').value = "";
-                await cargarProductos();
-            }
-        }
-
-        function exportarSQL() {
-            let reporteDiv = document.getElementById('reporte-sql') || document.createElement('div');
-            reporteDiv.id = 'reporte-sql';
-            reporteDiv.className = 'panel';
-            reporteDiv.style.marginTop = '20px';
-            reporteDiv.style.borderColor = 'yellow';
-            document.body.appendChild(reporteDiv);
-
-            reporteDiv.innerHTML = `
-                <h3 style="color: yellow; margin-top: 0;">>_ Reporte Final</h3>
-                <p>Ventas hoy: <strong>${historialVentas.length}</strong></p>
-                <p>Total: <strong style="color: #00ff00;">$${totalVendido.toFixed(2)}</strong></p>
-                <p style="font-size: 0.8em; color: gray;">Andromeda OS - Data Engineer: Senya</p>
-            `;
-            reporteDiv.scrollIntoView({ behavior: 'smooth' });
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
