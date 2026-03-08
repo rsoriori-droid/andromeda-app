@@ -7,25 +7,42 @@
 }
 
 body {
-    background-color: #ff6600;
+    
+    background: radial-gradient( circle at 20% 10%, rgba(187, 134, 252, 0.15) 0%, rgba(27, 30, 43, 1) 50%), #1b1e2b; /* Fondo oscurecido un poco para que resalte más el verde */
+    background-attachment: fixed;
+    position: relative;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     font-family: 'Segoe UI', sans-serif;
     overflow: hidden;
+-
 }
 
 /* --- VENTANA PRINCIPAL --- */
 .dashboard-window {
-    width: 1050px;
-    height: 650px;
+    top: 60px;
+    width: 1950px;
+    height: 950px;
     background-color: #1a1a2e;
     border-radius: 20px;
     display: flex;
     border: 3px solid #000;
     box-shadow: 0 0 60px rgba(0,0,0,0.6);
     overflow: hidden;
+    position: relative; /* CRÍTICO: Permite que el logo flote en relación a la ventana */
+}
+
+/* --- LOGO FLOTANTE --- */
+.floating-logo {
+    position: absolute;
+    top: -25px; /* Sube el logo para que quede "sentado" en el borde */
+    left: center; 
+    width: 960px; /* Tamaño ajustado para visibilidad */
+    z-index: 1000; /* Asegura que no se tape con nada */
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.6)); /* Sombra para dar profundidad */
+    pointer-events: none; /* Evita que el logo interfiera si haces click cerca */
 }
 
 /* --- SIDEBAR --- */
@@ -33,6 +50,7 @@ body {
     width: 240px;
     background: #0d0d1a;
     padding: 25px;
+    padding-top: 60px; /* Espacio extra arriba para que el logo no tape el texto "opciones" */
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -57,8 +75,8 @@ body {
 .btn-menu:hover {
     background: #3d3d5c;
     color: #fff;
-    border-color: #ff3ca6;
-    box-shadow: inset 0 0 15px rgba(255, 60, 166, 0.2);
+    border-color: #adff2f; /* Actualizado al nuevo verde */
+    box-shadow: inset 0 0 15px rgba(173, 255, 47, 0.2); /* Brillo verde */
     transform: translateX(8px);
 }
 
@@ -101,13 +119,14 @@ body {
 .btn-plus-neon {
     width: 55px;
     height: 55px;
-    background: linear-gradient(135deg, #ff6a3d, #ff3ca6);
+    background: linear-gradient(135deg, #32cd32, #adff2f); /* Gradiente Verde Mermelada */
     border: none;
     border-radius: 15px;
-    color: white;
+    color: #111; /* Letra oscura para contrastar con el verde brillante */
+    font-weight: bold;
     font-size: 1.8rem;
     cursor: pointer;
-    box-shadow: 0 0 20px rgba(255, 60, 166, 0.5);
+    box-shadow: 0 0 20px rgba(173, 255, 47, 0.5); /* Sombra verde */
     position: relative;
     z-index: 101;
 }
@@ -117,11 +136,11 @@ body {
 .add-f-window {
     position: absolute;
     right: 0;
-    top: 65px; /* Aparece justo debajo del botón */
+    top: 65px;
     width: 280px;
     background: rgba(17, 17, 38, 0.85);
-    backdrop-filter: blur(10px); /* Efecto cristal */
-    border: 1px solid #ff3ca6;
+    backdrop-filter: blur(10px);
+    border: 1px solid #adff2f; /* Borde verde */
     border-radius: 15px;
     padding: 25px;
     z-index: 100;
@@ -132,7 +151,6 @@ body {
     transition: all 0.3s ease;
 }
 
-/* La magia del hover: si tocas el botón o la propia ventana, se muestra */
 .add-container:hover .add-f-window {
     opacity: 1;
     visibility: visible;
@@ -169,7 +187,7 @@ body {
     padding-right: 5px;
 }
 
-/* Brillo veloz (Loading/Genshin effect) */
+/* Brillo veloz */
 .item-registro {
     padding: 12px;
     border-radius: 8px;
@@ -202,24 +220,5 @@ body {
 footer { display: flex; justify-content: space-between; align-items: center; color: #fff; font-family: monospace; }
 
 /* --- OCULTAR RUEDITA (SCROLLBAR) --- */
-
-/* 1. Para Chrome, Safari y Opera */
-.scroll-area::-webkit-scrollbar {
-    display: none;
-}
-
-/* 2. Para Firefox */
-.scroll-area {
-    scrollbar-width: none; /* Oculta la barra */
-    -ms-overflow-style: none;  /* Para Internet Explorer/Edge antiguo */
-}
-
-/* Opcional: Si quieres que el fondo naranja no tenga scroll tampoco */
-body {
-    overflow: hidden;
-}
-
-/* Aseguramos que los paneles internos sigan permitiendo scroll interno */
-.scroll-area {
-    overflow-y: scroll; 
-}
+.scroll-area::-webkit-scrollbar { display: none; }
+.scroll-area { scrollbar-width: none; -ms-overflow-style: none; overflow-y: scroll; }
