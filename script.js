@@ -65,7 +65,7 @@ async function cargarVentasHoy() {
             const div = document.createElement('div');
             div.className = 'item-registro';
             div.style.cursor = 'default'; // Las ventas no se clickean
-            div.innerHTML = `<span style="color:#ff3ca6;">[${hora}]</span> ${v.producto} - <span style="opacity:0.8;">$${parseFloat(v.precio).toFixed(2)}</span>`;
+            div.innerHTML = `<span style="color:#adff2f;">[${hora}]</span> ${v.producto} - <span style="opacity:0.8;">$${parseFloat(v.precio).toFixed(2)}</span>`;
             
             cuadroVentas.appendChild(div);
             totalVendido += parseFloat(v.precio);
@@ -114,7 +114,7 @@ function exportarSQL() {
     reporteDiv.id = 'reporte-sql';
     reporteDiv.style.marginTop = '20px';
     reporteDiv.style.padding = '15px';
-    reporteDiv.style.border = '1px solid #ff3ca6';
+    reporteDiv.style.border = '1px solid #adff2f';
     reporteDiv.style.background = '#1a1a2e';
     reporteDiv.style.color = '#fff';
     reporteDiv.style.borderRadius = '10px';
